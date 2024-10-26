@@ -1,6 +1,6 @@
 <div>
   To Do:
   <ul *ngFor="let entry of entries">
-       <mat-checkbox>{{entry.contents}}</mat-checkbox>
+       <mat-checkbox (change)="toggleCompleted($event, entry)">{{entry.contents}}</mat-checkbox><button mat-icon-button (click)="deleteEntry(entry)"><mat-icon fontIcon="close"></mat-icon></button>
   </ul>
 </div>
