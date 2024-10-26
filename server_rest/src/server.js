@@ -26,7 +26,7 @@ const server = http_1.default.createServer((req, res) => {
 });
 function getEntries(req, res) {
     console.log(req.method + ' ' + req.url);
-    var response = [{ "entries": entries }];
+    var response = entries;
     res.statusCode = 200;
     res.setHeader('content-Type', 'Application/json');
     res.end(JSON.stringify(response));
@@ -68,7 +68,7 @@ function updateEntry(req, res) {
     });
     req.on('end', function () {
         var index = entries.findIndex((entry) => entry.id == JSON.parse(body).id);
-        entries[index].contents = JSON.parse(body)['entry'];
+        entries[index].contents = JSON.parse(body)['contents'];
         var response = [{ "message": 'Entry at index ' + index + ' updated.' }];
         res.statusCode = 200;
         res.setHeader('content-Type', 'Application/json');

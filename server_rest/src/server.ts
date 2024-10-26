@@ -23,7 +23,7 @@ const server: Server = http.createServer((req: http.IncomingMessage, res: http.S
 
 function getEntries(req: http.IncomingMessage, res: http.ServerResponse) {
     console.log(req.method + ' ' + req.url)
-    var response = [{"entries": entries}]
+    var response = entries
     res.statusCode = 200
     res.setHeader('content-Type', 'Application/json');
     res.end(JSON.stringify(response))
@@ -74,7 +74,7 @@ function updateEntry(req: http.IncomingMessage, res: http.ServerResponse) {
         entries[index].contents = JSON.parse(body)['contents']
         var response = [{"message": 'Entry at index '+ index + ' updated.'}]
         res.statusCode = 200
-        res.setHeader('content-Type', 'Application/json');
+        res.setHeader('content-Type', 'Application/json')
         res.end(JSON.stringify(response))
     })
 }

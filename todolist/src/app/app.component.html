@@ -1,3 +1,6 @@
-`@for (entry of dummy_list; track entry.id) {
-  <p>{{entry.contents}}</p>
-}`
+<div>
+  To Do:
+  <ul *ngFor="let entry of entries">
+       <mat-checkbox>{{entry.contents}}</mat-checkbox>
+  </ul>
+</div>
