@@ -1,9 +1,21 @@
 import http, { Server } from 'http'
 import url from 'url'
+import mysql from 'mysql'
 const host = '127.0.0.1'
 const port = 10451
 
 var entries = [{'id': '10', 'contents': 'Entry 1', 'completed':'false'}, {'id': '11', 'contents': 'Entry 2', 'completed':'false'}, {'id': '12', 'contents': 'Entry 3', 'completed':'false'}]
+
+const con = mysql.createConnection({
+    host: 'localhost',
+    user: 'miles',
+    password: 'pass123'
+})
+
+con.connect(function(err) {
+    if (err) throw err
+    console.log('Connected to mysql server.')
+})
 
 const server: Server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
     const reqUrl = url.parse(req.url ?? "", true)

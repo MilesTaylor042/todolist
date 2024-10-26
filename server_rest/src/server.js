@@ -5,9 +5,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const http_1 = __importDefault(require("http"));
 const url_1 = __importDefault(require("url"));
+const mysql_1 = __importDefault(require("mysql"));
 const host = '127.0.0.1';
 const port = 10451;
 var entries = [{ 'id': '10', 'contents': 'Entry 1', 'completed': 'false' }, { 'id': '11', 'contents': 'Entry 2', 'completed': 'false' }, { 'id': '12', 'contents': 'Entry 3', 'completed': 'false' }];
+const con = mysql_1.default.createConnection({
+    host: 'localhost',
+    user: 'miles',
+    password: 'pass123'
+});
+con.connect(function (err) {
+    if (err)
+        throw err;
+    console.log('Connected to mysql server.');
+});
 const server = http_1.default.createServer((req, res) => {
     var _a, _b, _c, _d, _e;
     const reqUrl = url_1.default.parse((_a = req.url) !== null && _a !== void 0 ? _a : "", true);
