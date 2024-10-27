@@ -65,7 +65,6 @@ function getEntries(req, res) {
     con.query('SELECT * FROM list1', function (err, result, fields) {
         if (err)
             throw err;
-        console.log(result);
         var response = result;
         res.statusCode = 200;
         res.setHeader('content-Type', 'Application/json');
@@ -108,7 +107,6 @@ function deleteEntry(req, res, id) {
 }
 function updateEntry(req, res, id) {
     console.log(req.method + ' ' + req.url);
-    console.log(id);
     var body = '';
     req.on('data', function (chunk) {
         body += chunk;

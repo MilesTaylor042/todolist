@@ -1,0 +1,22 @@
+h1 {
+    text-align: center;
+}
+
+.maindiv {
+    position: absolute;
+    width: 500px;
+    height: 800px;
+    left: 50%;
+    margin-top: 50px;
+    margin-left: -250px;
+}
+
+.newEntryForm {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.removeButton {
+    position: absolute;
+    left: 90%;
+}

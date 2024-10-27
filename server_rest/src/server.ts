@@ -105,7 +105,6 @@ function deleteEntry(req: http.IncomingMessage, res: http.ServerResponse, id: st
 
 function updateEntry(req: http.IncomingMessage, res: http.ServerResponse, id: string) {
     console.log(req.method + ' ' + req.url)
-    console.log(id)
     var body = ''
     req.on('data',  function(chunk) {
         body += chunk;

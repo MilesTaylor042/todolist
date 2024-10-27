@@ -1,15 +1,1 @@
-<div class="maindiv">
-  <h1>To Do:</h1>
-  <mat-list *ngFor="let entry of entries">
-    <mat-list-item role="listitem">
-      <mat-checkbox (change)="toggleCompleted($event, entry)" [checked]="entry.completed">{{entry.contents}}</mat-checkbox><button class="removeButton" mat-icon-button (click)="deleteEntry(entry)"><mat-icon fontIcon="close"></mat-icon></button>
-    </mat-list-item>
-  </mat-list>
-  <form class="newEntryForm" [formGroup]="addForm" (ngSubmit)="onSubmit()">
-    <mat-form-field class="">
-      <mat-label>Add Item</mat-label>
-      <input matInput type="text" maxlength="500" placeholder="Someting to do..." formControlName="contents">
-    </mat-form-field>
-    <button mat-icon-button type="submit"><mat-icon fontIcon="add"></mat-icon></button>
-  </form>
-</div>
+<router-outlet></router-outlet>
