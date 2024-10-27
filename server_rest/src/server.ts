@@ -9,12 +9,22 @@ var entries = [{'id': '10', 'contents': 'Entry 1', 'completed':'false'}, {'id': 
 const con = mysql.createConnection({
     host: 'localhost',
     user: 'miles',
-    password: 'pass123'
+    password: 'pass123',
+    database: 'todolist'
 })
 
 con.connect(function(err) {
     if (err) throw err
     console.log('Connected to mysql server.')
+    con.query('SHOW TABLES LIKE \'list1\'', function (err, result) {
+        if (err) throw err
+        if (result.length == 0) {
+            con.query('CREATE TABLE list1 (id VARCHAR(36), contents VARCHAR(500), completed BOOL)', function (err, result) {
+                if (err) throw err
+                console.log('Created table list1 as it did not exist.')
+            })
+        }
+    })
 })
 
 const server: Server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
@@ -42,17 +52,19 @@ const server: Server = http.createServer((req: http.IncomingMessage, res: http.S
     }
     else if (reqUrl.pathname?.indexOf('/entries') == 0 && req.method == 'PATCH') {
         var id = req.url?.split("/")[2]
-        console.log(id)
         updateEntry(req, res, id!)
     }
 })
 
 function getEntries(req: http.IncomingMessage, res: http.ServerResponse) {
     console.log(req.method + ' ' + req.url)
-    var response = entries
-    res.statusCode = 200
-    res.setHeader('content-Type', 'Application/json');
-    res.end(JSON.stringify(response))
+    con.query('SELECT * FROM list1', function (err, result, fields) {
+        if (err) throw err
+        var response: {id: string, contents: string, completed: boolean}[] = result
+        res.statusCode = 200
+        res.setHeader('content-Type', 'Application/json');
+        res.end(JSON.stringify(response))
+    })
 }
 
 function addEntry(req: http.IncomingMessage, res: http.ServerResponse) {
@@ -63,8 +75,11 @@ function addEntry(req: http.IncomingMessage, res: http.ServerResponse) {
     })
 
     req.on('end', function() {
-        entries.push(JSON.parse(body)['entry'])
-        var response = [JSON.parse(body)]
+        var newEntry = JSON.parse(body)['entry']
+        con.query('INSERT INTO list1 SET ?', newEntry, function(err, result) {
+            if (err) throw err
+        })
+        var response = {'message': 'Added new entry to list.'}
         res.statusCode = 201
         res.setHeader('content-Type', 'Application/json');
         res.end(JSON.stringify(response))
@@ -73,8 +88,11 @@ function addEntry(req: http.IncomingMessage, res: http.ServerResponse) {
 
 function deleteEntry(req: http.IncomingMessage, res: http.ServerResponse, id: string) {
     console.log(req.method + ' ' + req.url)
-    var index = entries.findIndex((entry) => entry.id == id)
-    entries.splice(index, 1)
+    con.query('DELETE FROM list1 WHERE ?', {id: id}, function (err, result) {
+        if (err) throw err
+    })
+    // var index = entries.findIndex((entry) => entry.id == id)
+    // entries.splice(index, 1)
     var response = [{'message': 'Entry deleted.'}]
     res.statusCode = 200
     res.setHeader('content-Type', 'Application/json');
@@ -90,11 +108,14 @@ function updateEntry(req: http.IncomingMessage, res: http.ServerResponse, id: st
     })
 
     req.on('end', function() {
-        console.log(id)
-        var index = entries.findIndex((entry) => entry.id == id)
-        entries[index].contents = JSON.parse(body)['contents']
-        entries[index].completed = JSON.parse(body)['completed']
-        var response = [{"message": 'Entry at index '+ index + ' updated.'}]
+        con.query('UPDATE list1 SET ? WHERE id = ?', [JSON.parse(body), id], function (err, result) {
+            if (err) throw err
+        })
+        // console.log(id)
+        // var index = entries.findIndex((entry) => entry.id == id)
+        // entries[index].contents = JSON.parse(body)['contents']
+        // entries[index].completed = JSON.parse(body)['completed']
+        var response = [{"message": 'Entry with id '+ id + ' updated.'}]
         res.statusCode = 200
         res.setHeader('content-Type', 'Application/json')
         res.end(JSON.stringify(response))
