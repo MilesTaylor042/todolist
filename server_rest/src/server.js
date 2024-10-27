@@ -59,16 +59,44 @@ const server = http_1.default.createServer((req, res) => {
         var id = (_e = req.url) === null || _e === void 0 ? void 0 : _e.split("/")[2];
         updateEntry(req, res, id);
     }
+    else if (reqUrl.pathname == '/login' && req.method == "POST") {
+        validateUser(req, res);
+    }
 });
+function validateUser(req, res) {
+    console.log(req.method + ' ' + req.url);
+    var body = '';
+    req.on('data', function (chunk) {
+        body += chunk;
+    });
+    req.on('end', function () {
+        var credentials = JSON.parse(body);
+        console.log(credentials);
+        if (credentials.username == 'miles' && credentials.password == 'pass123') {
+            console.log(credentials);
+            res.statusCode = 200;
+            res.end();
+        }
+        else {
+            res.statusCode = 401;
+            res.end();
+        }
+    });
+}
 function getEntries(req, res) {
     console.log(req.method + ' ' + req.url);
     con.query('SELECT * FROM list1', function (err, result, fields) {
-        if (err)
+        if (err) {
+            var response = { 'message': err.sqlMessage };
+            res.statusCode = 500;
+            res.setHeader('content-Type', 'Application/json');
+            res.end(JSON.stringify(response));
             throw err;
-        var response = result;
+        }
+        var responseEntries = result;
         res.statusCode = 200;
         res.setHeader('content-Type', 'Application/json');
-        res.end(JSON.stringify(response));
+        res.end(JSON.stringify(responseEntries));
     });
 }
 function addEntry(req, res) {
@@ -97,8 +125,13 @@ function addEntry(req, res) {
 function deleteEntry(req, res, id) {
     console.log(req.method + ' ' + req.url);
     con.query('DELETE FROM list1 WHERE ?', { id: id }, function (err, result) {
-        if (err)
+        if (err) {
+            var response = { 'message': err.sqlMessage };
+            res.statusCode = 500;
+            res.setHeader('content-Type', 'Application/json');
+            res.end(JSON.stringify(response));
             throw err;
+        }
         var response = { 'message': 'Entry deleted.' };
         res.statusCode = 200;
         res.setHeader('content-Type', 'Application/json');
@@ -113,8 +146,13 @@ function updateEntry(req, res, id) {
     });
     req.on('end', function () {
         con.query('UPDATE list1 SET ? WHERE id = ?', [JSON.parse(body), id], function (err, result) {
-            if (err)
+            if (err) {
+                var response = { 'message': err.sqlMessage };
+                res.statusCode = 500;
+                res.setHeader('content-Type', 'Application/json');
+                res.end(JSON.stringify(response));
                 throw err;
+            }
             var response = { "message": 'Entry with id ' + id + ' updated.' };
             res.statusCode = 200;
             res.setHeader('content-Type', 'Application/json');

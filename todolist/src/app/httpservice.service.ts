@@ -9,6 +9,13 @@ export class HttpService {
 
   constructor(private http: HttpClient) { }
 
+  validateUser(username: string, password: string) {
+    const url = 'http://127.0.0.1:10451/login'
+    const body = {'username': username, 'password': password}
+    const options = {headers: new HttpHeaders({'Content-Type': 'application/json'})}
+    return this.http.post(url, body, options)
+  }
+
   getEntries() {
     return this.http.get('http://127.0.0.1:10451/entries')
   }
