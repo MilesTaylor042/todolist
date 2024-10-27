@@ -4,7 +4,8 @@ import mysql from 'mysql'
 const host = '127.0.0.1'
 const port = 10451
 
-var entries = [{'id': '10', 'contents': 'Entry 1', 'completed':'false'}, {'id': '11', 'contents': 'Entry 2', 'completed':'false'}, {'id': '12', 'contents': 'Entry 3', 'completed':'false'}]
+//dummy list for testing without mysql database
+//var entries = [{'id': '10', 'contents': 'Entry 1', 'completed':'false'}, {'id': '11', 'contents': 'Entry 2', 'completed':'false'}, {'id': '12', 'contents': 'Entry 3', 'completed':'false'}]
 
 const con = mysql.createConnection({
     host: 'localhost',
