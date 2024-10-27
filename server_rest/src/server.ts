@@ -32,7 +32,6 @@ const server: Server = http.createServer((req: http.IncomingMessage, res: http.S
     const reqUrl = url.parse(req.url ?? "", true)
     res.setHeader('Access-Control-Allow-Origin', '*')
     if (req.method == 'OPTIONS') {
-        var headers: any = {}
         res.setHeader('Access-Control-Allow-Origin', '*')
         res.setHeader('Access-Control-Allow-Methods', 'POST, GET, PUT, PATCH, DELETE, OPTIONS')
         res.setHeader('Access-Control-Allow-Credentials', 'false')
@@ -61,7 +60,7 @@ function getEntries(req: http.IncomingMessage, res: http.ServerResponse) {
     console.log(req.method + ' ' + req.url)
     con.query('SELECT * FROM list1', function (err, result, fields) {
         if (err) throw err
-        var response: {id: string, contents: string, completed: boolean}[] = result
+        var response = result
         res.statusCode = 200
         res.setHeader('content-Type', 'Application/json');
         res.end(JSON.stringify(response))
@@ -76,14 +75,20 @@ function addEntry(req: http.IncomingMessage, res: http.ServerResponse) {
     })
 
     req.on('end', function() {
-        var newEntry = JSON.parse(body)['entry']
+        var newEntry = JSON.parse(body)
         con.query('INSERT INTO list1 SET ?', newEntry, function(err, result) {
-            if (err) throw err
+            if (err) {
+                var response = {'message': err.sqlMessage!}
+                res.statusCode = 500
+                res.setHeader('content-Type', 'Application/json')
+                res.end(JSON.stringify(response))
+                throw err
+            }
+            var response = {'message': 'Added new entry to list.'}
+            res.statusCode = 201
+            res.setHeader('content-Type', 'Application/json')
+            res.end(JSON.stringify(response))
         })
-        var response = {'message': 'Added new entry to list.'}
-        res.statusCode = 201
-        res.setHeader('content-Type', 'Application/json');
-        res.end(JSON.stringify(response))
     })
 }
 
@@ -91,13 +96,11 @@ function deleteEntry(req: http.IncomingMessage, res: http.ServerResponse, id: st
     console.log(req.method + ' ' + req.url)
     con.query('DELETE FROM list1 WHERE ?', {id: id}, function (err, result) {
         if (err) throw err
+        var response = {'message': 'Entry deleted.'}
+        res.statusCode = 200
+        res.setHeader('content-Type', 'Application/json');
+        res.end(JSON.stringify(response))
     })
-    // var index = entries.findIndex((entry) => entry.id == id)
-    // entries.splice(index, 1)
-    var response = [{'message': 'Entry deleted.'}]
-    res.statusCode = 200
-    res.setHeader('content-Type', 'Application/json');
-    res.end(JSON.stringify(response))
 }
 
 function updateEntry(req: http.IncomingMessage, res: http.ServerResponse, id: string) {
@@ -111,15 +114,11 @@ function updateEntry(req: http.IncomingMessage, res: http.ServerResponse, id: st
     req.on('end', function() {
         con.query('UPDATE list1 SET ? WHERE id = ?', [JSON.parse(body), id], function (err, result) {
             if (err) throw err
+            var response = {"message": 'Entry with id '+ id + ' updated.'}
+            res.statusCode = 200
+            res.setHeader('content-Type', 'Application/json')
+            res.end(JSON.stringify(response))
         })
-        // console.log(id)
-        // var index = entries.findIndex((entry) => entry.id == id)
-        // entries[index].contents = JSON.parse(body)['contents']
-        // entries[index].completed = JSON.parse(body)['completed']
-        var response = [{"message": 'Entry with id '+ id + ' updated.'}]
-        res.statusCode = 200
-        res.setHeader('content-Type', 'Application/json')
-        res.end(JSON.stringify(response))
     })
 }
 
