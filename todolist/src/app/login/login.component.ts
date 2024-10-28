@@ -5,7 +5,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Router } from '@angular/router';
-import { response } from 'express';
+import { CookieService } from 'ngx-cookie-service'
+import { randomUUID } from 'crypto';
 
 @Component({
   selector: 'app-login',
@@ -20,26 +21,38 @@ import { response } from 'express';
   styleUrl: './login.component.css'
 })
 export class LoginComponent {
-  constructor(private httpService: HttpService, private formBuilder: FormBuilder, private router: Router) {}
+  constructor(private httpService: HttpService, private formBuilder: FormBuilder, private router: Router, private cookieService: CookieService) {}
   loginForm = this.formBuilder.group({username: '', password: ''}, {validators: [Validators.required, Validators.required]})
+  registerForm = this.formBuilder.group({username: '', password: ''}, {validators: [Validators.required, Validators.required]})
 
-  onSubmit() {
+  login() {
     var username = this.loginForm.value['username']
     var password = this.loginForm.value['password']
     if (username && password) {
-      console.log('trying to log in with credentials ' + username + ', ' + password)
       this.httpService.validateUser(username, password).subscribe(
         (response: any) => {
-          console.log(response)
-          if (response.statusCode != 200) {
-            console.log('INVALID CREDENTIALS')
+          var status = response.status
+          if (status == 200) {
+            this.cookieService.set('login', username!, 1000)
+            this.router.navigate(['/list'])
           } 
           else {
-            this.router.navigate(['/list'])
+            console.log('INVALID CREDENTIALS')
           }
         }
       )
-      
+    }
+  }
+
+  register() {
+    var username = this.registerForm.value['username']
+    var password = this.registerForm.value['password']
+    if (username && password) {
+      this.httpService.addUser(username, password).subscribe(
+        (response: any) => {
+          console.log(response)
+        }
+      )
     }
   }
 }

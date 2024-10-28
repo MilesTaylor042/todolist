@@ -1,6 +1,16 @@
 <div>
     <h1>Login</h1>
-    <form class="loginForm" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <form class="loginForm" [formGroup]="loginForm" (ngSubmit)="login()">
+        <mat-form-field>
+            <input matInput type="text" placeholder="Username" formControlName="username">
+        </mat-form-field>
+        <mat-form-field>
+            <input matInput type="password" placeholder="Password" formControlName="password">
+        </mat-form-field>
+        <button mat-icon-button type="submit"><mat-icon fontIcon="login"></mat-icon></button>
+    </form>
+    <h1>Register</h1>
+    <form class="registerForm" [formGroup]="registerForm" (ngSubmit)="register()">
         <mat-form-field>
             <input matInput type="text" placeholder="Username" formControlName="username">
         </mat-form-field>

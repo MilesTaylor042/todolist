@@ -13,6 +13,7 @@ import { FormsModule, FormBuilder, ReactiveFormsModule, FormControl, FormGroup }
 import { Entry } from '../entry';
 import { response } from 'express';
 import { error } from 'console';
+import { CookieService } from 'ngx-cookie-service';
 
 
 @Component({
@@ -35,19 +36,22 @@ import { error } from 'console';
 export class ListComponent {
   title: string = 'todolist';
   entries: Entry[] = []
-  constructor(private httpService: HttpService, private formBuilder: FormBuilder) {}
+  constructor(private httpService: HttpService, private formBuilder: FormBuilder, private cookieService: CookieService) {}
 
   addForm = this.formBuilder.group({contents: ''})
+
+  ngOnInit() {
+    if (this.cookieService.get('login')) {
+      console.log(this.cookieService.get('login'))
+    }
+    this.getEntries()
+  }
 
   onSubmit(): void {
     if (this.addForm.value['contents'] != '') {
       this.addEntry(this.addForm.value['contents']!)
     }
     this.addForm.reset()
-  }
-
-  ngOnInit() {
-    this.getEntries()
   }
 
   getEntries() {
