@@ -35,9 +35,12 @@ import { CookieService } from 'ngx-cookie-service';
 })
 export class ListComponent {
   title: string = 'todolist';
-  entries: Entry[] = []
   constructor(private httpService: HttpService, private formBuilder: FormBuilder, private cookieService: CookieService) {}
 
+  //Local array of list entries
+  entries: Entry[] = []
+
+  //Form control group to add a new entry
   addForm = this.formBuilder.group({contents: ''})
 
   ngOnInit() {
@@ -47,6 +50,7 @@ export class ListComponent {
     this.getEntries()
   }
 
+  //Adds an entry to the list then resets the form
   onSubmit(): void {
     if (this.addForm.value['contents'] != '') {
       this.addEntry(this.addForm.value['contents']!)
@@ -54,11 +58,13 @@ export class ListComponent {
     this.addForm.reset()
   }
 
+  //Uses HTTP service to get all entries in the list from the API, then updates the local list
   getEntries() {
     this.httpService.getEntries().subscribe(
       (response: any) => { 
         this.entries = []
         for (var item of response) {
+          //Cast to boolean to convert from mysql boolean data type
           item.completed = Boolean(item.completed)
           this.entries.push(item)
         }
@@ -66,6 +72,7 @@ export class ListComponent {
     )
   }
 
+  //Uses HTTP service to add an entry to the list, then updates the local list
   addEntry(contents: string) {
     if (!contents) {
       throw new Error('no contents provided')
@@ -73,24 +80,22 @@ export class ListComponent {
 
     this.httpService.addEntry(contents).subscribe(
       (response: any) => {
-        console.log(response)
         this.getEntries()
       }
     )
   }
 
+  //Uses HTTP service to update an entry's completed 
   toggleCompleted(e: MatCheckboxChange, entry: Entry) {
     this.httpService.updateEntry(entry.id, entry.contents, e.checked).subscribe(
-      (response: any) => {
-        console.log(response)
-      }
+      (response: any) => { }
     )
   }
 
+  //Uses HTTP service to delete an entry from the list
   deleteEntry(entry: Entry) {
     this.httpService.deleteEntry(entry.id).subscribe(
       (response: any) => {
-        console.log(response)
         var index = this.entries.findIndex((localEntry) => localEntry.id == entry.id)
         this.entries.splice(index, 1)
       }

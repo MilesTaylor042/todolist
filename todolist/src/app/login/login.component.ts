@@ -22,9 +22,11 @@ import { randomUUID } from 'crypto';
 })
 export class LoginComponent {
   constructor(private httpService: HttpService, private formBuilder: FormBuilder, private router: Router, private cookieService: CookieService) {}
+  //Form control groups for login and register forms
   loginForm = this.formBuilder.group({username: '', password: ''}, {validators: [Validators.required, Validators.required]})
   registerForm = this.formBuilder.group({username: '', password: ''}, {validators: [Validators.required, Validators.required]})
 
+  //Attempts a login after the login form has been filled
   login() {
     var username = this.loginForm.value['username']
     var password = this.loginForm.value['password']
@@ -41,9 +43,11 @@ export class LoginComponent {
           }
         }
       )
+      this.loginForm.reset()
     }
   }
 
+  //Attempts to register a user on the server
   register() {
     var username = this.registerForm.value['username']
     var password = this.registerForm.value['password']
@@ -53,6 +57,7 @@ export class LoginComponent {
           console.log(response)
         }
       )
+      this.registerForm.reset()
     }
   }
 }

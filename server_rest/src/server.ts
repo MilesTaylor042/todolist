@@ -11,6 +11,7 @@ const port = 10451
 
 var sessions = []
 
+//Connect to mysql database
 const con = mysql.createConnection({
     host: 'localhost',
     user: 'miles',
@@ -18,6 +19,7 @@ const con = mysql.createConnection({
     database: 'todolist'
 })
 
+//Check connection, then create todolist table and users table if they don't exist
 con.connect(function(err) {
     if (err) throw err
     console.log('Connected to mysql server.')
@@ -42,9 +44,11 @@ con.connect(function(err) {
 })
 
 const server: Server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
+    //Set global headers
     const reqUrl = url.parse(req.url ?? "", true)
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200')
     res.setHeader('Access-Control-Allow-Credentials', 'true')
+    //Options request headers for CORS
     if (req.method == 'OPTIONS') {
         res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200')
         res.setHeader('Allow-Origin-With-Credentials', 'true')
@@ -55,23 +59,29 @@ const server: Server = http.createServer((req: http.IncomingMessage, res: http.S
         res.statusCode = 200
         res.end()
     }
+    //Get all entries in the list
     else if (reqUrl.pathname == '/entries' && req.method == 'GET') {
         getEntries(req, res)
     }
+    //Add a new entry to the list
     else if (reqUrl.pathname == '/entries' && req.method == 'POST') {
         addEntry(req, res)
     }
+    //Delete an entry from the list
     else if (reqUrl.pathname?.indexOf('/entries') == 0 && req.method == 'DELETE') {
         var id = req.url?.split("/")[2]
         deleteEntry(req, res, id!)
     }
+    //Update an entry in the list
     else if (reqUrl.pathname?.indexOf('/entries') == 0 && req.method == 'PATCH') {
         var id = req.url?.split("/")[2]
         updateEntry(req, res, id!)
     } 
+    //Check if a user has valid credentials
     else if (reqUrl.pathname == '/login' && req.method == "POST") {
         validateUser(req, res)
     }
+    //Create a new user
     else if (reqUrl.pathname == '/users' && req.method == "POST") {
         addUser(req, res)
     }
@@ -79,6 +89,7 @@ const server: Server = http.createServer((req: http.IncomingMessage, res: http.S
 
 function validateUser(req: http.IncomingMessage, res: http.ServerResponse) {
     console.log(req.method + ' ' + req.url)
+    //Stream request body in chunks
     var body = ''
     req.on('data',  function(chunk) {
         body += chunk;
@@ -86,6 +97,7 @@ function validateUser(req: http.IncomingMessage, res: http.ServerResponse) {
 
     req.on('end', function() {
         var credentials: {username: string, password: string} = JSON.parse(body)
+        //Get password hash from database and compare with password in request using bcrypt
         con.query('SELECT CAST(password AS CHAR) FROM users WHERE username = ?', credentials.username, function (err, result) {
             if (err) {
                 var response = {'message': err.sqlMessage!}
@@ -124,6 +136,7 @@ function addUser(req: http.IncomingMessage, res: http.ServerResponse) {
     req.on('end', function() {
         var credentials: {username: string, password: string} = JSON.parse(body)
         var username = credentials.username
+        //Check if user already exists
         con.query('SELECT username FROM users WHERE username = ?', credentials.username, function(err, result) {
             if (err) {
                 var response = {'message': err.sqlMessage!}
@@ -140,6 +153,7 @@ function addUser(req: http.IncomingMessage, res: http.ServerResponse) {
                 return
             }
         })
+        //Create bcrypt password hash and store user credentials in database
         var salt = bcrypt.genSaltSync(10)
         var passwordHash = bcrypt.hashSync(credentials.password, salt)
         con.query('INSERT INTO users SET ?', {username: username, password: passwordHash}, function(err, result) {
@@ -151,6 +165,8 @@ function addUser(req: http.IncomingMessage, res: http.ServerResponse) {
                 throw err
             }
         })
+        //Create user specific to do list table
+        //Not yet implemented
         con.query('CREATE TABLE ' + username + ' (id VARCHAR(36), contents VARCHAR(500), completed BOOL)', function (err, result) {
             if (err) {
                 var response = {'message': err.sqlMessage!}
@@ -169,6 +185,7 @@ function addUser(req: http.IncomingMessage, res: http.ServerResponse) {
 
 function getEntries(req: http.IncomingMessage, res: http.ServerResponse) {
     console.log(req.method + ' ' + req.url)
+    //Get all entries in to do list from database
     con.query('SELECT * FROM list1', function (err, result, fields) {
         if (err) {
             var response = {'message': err.sqlMessage!}
@@ -185,7 +202,6 @@ function getEntries(req: http.IncomingMessage, res: http.ServerResponse) {
 }
 
 function addEntry(req: http.IncomingMessage, res: http.ServerResponse) {
-    console.log(req)
     console.log(req.method + ' ' + req.url)
     var body = ''
     req.on('data',  function(chunk) {
@@ -194,6 +210,7 @@ function addEntry(req: http.IncomingMessage, res: http.ServerResponse) {
 
     req.on('end', function() {
         var newEntry = JSON.parse(body)
+        //Add entry into database
         con.query('INSERT INTO list1 SET ?', newEntry, function(err, result) {
             if (err) {
                 var response = {'message': err.sqlMessage!}
@@ -212,6 +229,7 @@ function addEntry(req: http.IncomingMessage, res: http.ServerResponse) {
 
 function deleteEntry(req: http.IncomingMessage, res: http.ServerResponse, id: string) {
     console.log(req.method + ' ' + req.url)
+    //Delete entry from database
     con.query('DELETE FROM list1 WHERE ?', {id: id}, function (err, result) {
         if (err) {
             var response = {'message': err.sqlMessage!}
@@ -235,6 +253,7 @@ function updateEntry(req: http.IncomingMessage, res: http.ServerResponse, id: st
     })
 
     req.on('end', function() {
+        //Update entry in database
         con.query('UPDATE list1 SET ? WHERE id = ?', [JSON.parse(body), id], function (err, result) {
             if (err) {
                 var response = {'message': err.sqlMessage!}
@@ -251,6 +270,7 @@ function updateEntry(req: http.IncomingMessage, res: http.ServerResponse, id: st
     })
 }
 
+//Listen on port 10451
 server.listen(port, host, () => {
     console.log(`Server running at http://${host}:${port}/`)
 })
