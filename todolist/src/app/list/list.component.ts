@@ -11,8 +11,6 @@ import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatListModule } from '@angular/material/list'
 import { FormsModule, FormBuilder, ReactiveFormsModule, FormControl, FormGroup } from '@angular/forms';
 import { Entry } from '../entry';
-import { response } from 'express';
-import { error } from 'console';
 import { CookieService } from 'ngx-cookie-service';
 
 
