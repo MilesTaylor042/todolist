@@ -31,17 +31,20 @@ const crypto_1 = require("crypto");
 const bcrypt = __importStar(require("bcrypt"));
 const url_1 = __importDefault(require("url"));
 const mysql_1 = __importDefault(require("mysql"));
+var config = require('../dbconfig.json');
 const host = '127.0.0.1';
 const port = 10451;
 //dummy list for testing without mysql database
 //var entries = [{'id': '10', 'contents': 'Entry 1', 'completed':'false'}, {'id': '11', 'contents': 'Entry 2', 'completed':'false'}, {'id': '12', 'contents': 'Entry 3', 'completed':'false'}]
 var sessions = [];
+//Connect to mysql database
 const con = mysql_1.default.createConnection({
-    host: 'localhost',
-    user: 'miles',
-    password: 'pass123',
-    database: 'todolist'
+    host: config.dbhost,
+    user: config.dbuser,
+    password: config.dbpass,
+    database: config.db
 });
+//Check connection, then create todolist table and users table if they don't exist
 con.connect(function (err) {
     if (err)
         throw err;
@@ -71,9 +74,11 @@ con.connect(function (err) {
 });
 const server = http_1.default.createServer((req, res) => {
     var _a, _b, _c, _d, _e;
+    //Set global headers
     const reqUrl = url_1.default.parse((_a = req.url) !== null && _a !== void 0 ? _a : "", true);
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
+    //Options request headers for CORS
     if (req.method == 'OPTIONS') {
         res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
         res.setHeader('Allow-Origin-With-Credentials', 'true');
@@ -84,35 +89,43 @@ const server = http_1.default.createServer((req, res) => {
         res.statusCode = 200;
         res.end();
     }
+    //Get all entries in the list
     else if (reqUrl.pathname == '/entries' && req.method == 'GET') {
         getEntries(req, res);
     }
+    //Add a new entry to the list
     else if (reqUrl.pathname == '/entries' && req.method == 'POST') {
         addEntry(req, res);
     }
+    //Delete an entry from the list
     else if (((_b = reqUrl.pathname) === null || _b === void 0 ? void 0 : _b.indexOf('/entries')) == 0 && req.method == 'DELETE') {
         var id = (_c = req.url) === null || _c === void 0 ? void 0 : _c.split("/")[2];
         deleteEntry(req, res, id);
     }
+    //Update an entry in the list
     else if (((_d = reqUrl.pathname) === null || _d === void 0 ? void 0 : _d.indexOf('/entries')) == 0 && req.method == 'PATCH') {
         var id = (_e = req.url) === null || _e === void 0 ? void 0 : _e.split("/")[2];
         updateEntry(req, res, id);
     }
+    //Check if a user has valid credentials
     else if (reqUrl.pathname == '/login' && req.method == "POST") {
         validateUser(req, res);
     }
+    //Create a new user
     else if (reqUrl.pathname == '/users' && req.method == "POST") {
         addUser(req, res);
     }
 });
 function validateUser(req, res) {
     console.log(req.method + ' ' + req.url);
+    //Stream request body in chunks
     var body = '';
     req.on('data', function (chunk) {
         body += chunk;
     });
     req.on('end', function () {
         var credentials = JSON.parse(body);
+        //Get password hash from database and compare with password in request using bcrypt
         con.query('SELECT CAST(password AS CHAR) FROM users WHERE username = ?', credentials.username, function (err, result) {
             if (err) {
                 var response = { 'message': err.sqlMessage };
@@ -149,6 +162,7 @@ function addUser(req, res) {
     req.on('end', function () {
         var credentials = JSON.parse(body);
         var username = credentials.username;
+        //Check if user already exists
         con.query('SELECT username FROM users WHERE username = ?', credentials.username, function (err, result) {
             if (err) {
                 var response = { 'message': err.sqlMessage };
@@ -165,6 +179,7 @@ function addUser(req, res) {
                 return;
             }
         });
+        //Create bcrypt password hash and store user credentials in database
         var salt = bcrypt.genSaltSync(10);
         var passwordHash = bcrypt.hashSync(credentials.password, salt);
         con.query('INSERT INTO users SET ?', { username: username, password: passwordHash }, function (err, result) {
@@ -176,6 +191,8 @@ function addUser(req, res) {
                 throw err;
             }
         });
+        //Create user specific to do list table
+        //Not yet implemented
         con.query('CREATE TABLE ' + username + ' (id VARCHAR(36), contents VARCHAR(500), completed BOOL)', function (err, result) {
             if (err) {
                 var response = { 'message': err.sqlMessage };
@@ -193,6 +210,7 @@ function addUser(req, res) {
 }
 function getEntries(req, res) {
     console.log(req.method + ' ' + req.url);
+    //Get all entries in to do list from database
     con.query('SELECT * FROM list1', function (err, result, fields) {
         if (err) {
             var response = { 'message': err.sqlMessage };
@@ -208,7 +226,6 @@ function getEntries(req, res) {
     });
 }
 function addEntry(req, res) {
-    console.log(req);
     console.log(req.method + ' ' + req.url);
     var body = '';
     req.on('data', function (chunk) {
@@ -216,6 +233,7 @@ function addEntry(req, res) {
     });
     req.on('end', function () {
         var newEntry = JSON.parse(body);
+        //Add entry into database
         con.query('INSERT INTO list1 SET ?', newEntry, function (err, result) {
             if (err) {
                 var response = { 'message': err.sqlMessage };
@@ -233,6 +251,7 @@ function addEntry(req, res) {
 }
 function deleteEntry(req, res, id) {
     console.log(req.method + ' ' + req.url);
+    //Delete entry from database
     con.query('DELETE FROM list1 WHERE ?', { id: id }, function (err, result) {
         if (err) {
             var response = { 'message': err.sqlMessage };
@@ -254,6 +273,7 @@ function updateEntry(req, res, id) {
         body += chunk;
     });
     req.on('end', function () {
+        //Update entry in database
         con.query('UPDATE list1 SET ? WHERE id = ?', [JSON.parse(body), id], function (err, result) {
             if (err) {
                 var response = { 'message': err.sqlMessage };
@@ -269,6 +289,7 @@ function updateEntry(req, res, id) {
         });
     });
 }
+//Listen on port 10451
 server.listen(port, host, () => {
     console.log(`Server running at http://${host}:${port}/`);
 });

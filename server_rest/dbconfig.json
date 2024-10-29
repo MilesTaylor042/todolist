@@ -1,0 +1,6 @@
+{
+    "dbhost": "HOST_HERE",
+    "dbuser": "USER_HERE",
+    "dbpass": "PASSWORD_HERE",
+    "db": "DB_NAME_HERE"
+}

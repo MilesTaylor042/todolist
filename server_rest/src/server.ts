@@ -3,6 +3,7 @@ import { randomBytes } from 'crypto'
 import * as bcrypt from 'bcrypt'
 import url from 'url'
 import mysql from 'mysql'
+var config = require('../dbconfig.json')
 const host = '127.0.0.1'
 const port = 10451
 
@@ -13,10 +14,10 @@ var sessions = []
 
 //Connect to mysql database
 const con = mysql.createConnection({
-    host: 'localhost',
-    user: 'miles',
-    password: 'pass123',
-    database: 'todolist'
+    host: config.dbhost,
+    user: config.dbuser,
+    password: config.dbpass,
+    database: config.db
 })
 
 //Check connection, then create todolist table and users table if they don't exist

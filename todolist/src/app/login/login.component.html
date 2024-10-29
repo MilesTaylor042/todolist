@@ -1,22 +1,28 @@
 <div>
-    <h1>Login</h1>
-    <form class="loginForm" [formGroup]="loginForm" (ngSubmit)="login()">
-        <mat-form-field>
-            <input matInput type="text" placeholder="Username" formControlName="username">
-        </mat-form-field>
-        <mat-form-field>
-            <input matInput type="password" placeholder="Password" formControlName="password">
-        </mat-form-field>
-        <button mat-icon-button type="submit"><mat-icon fontIcon="login"></mat-icon></button>
-    </form>
-    <h1>Register</h1>
-    <form class="registerForm" [formGroup]="registerForm" (ngSubmit)="register()">
-        <mat-form-field>
-            <input matInput type="text" placeholder="Username" formControlName="username">
-        </mat-form-field>
-        <mat-form-field>
-            <input matInput type="password" placeholder="Password" formControlName="password">
-        </mat-form-field>
-        <button mat-icon-button type="submit"><mat-icon fontIcon="login"></mat-icon></button>
-    </form>
+    <h1 class="title">To Do List App</h1>
+    <div class="loginForm">
+        <h2>Login</h2>
+        <form [formGroup]="loginForm" (ngSubmit)="login()">
+            <mat-form-field class="loginButton">
+                <input matInput type="text" placeholder="Username" formControlName="username">
+            </mat-form-field>
+            <mat-form-field class="loginButton">
+                <input matInput type="password" placeholder="Password" formControlName="password">
+            </mat-form-field>
+            <button mat-icon-button type="submit"><mat-icon fontIcon="login"></mat-icon></button>
+        </form>
+    </div>
+
+    <div class="registerForm">
+        <h3>Register</h3>
+        <form [formGroup]="registerForm" (ngSubmit)="register()">
+            <mat-form-field class="loginButton">
+                <input matInput type="text" placeholder="Username" formControlName="username">
+            </mat-form-field>
+            <mat-form-field class="loginButton">
+                <input matInput type="password" placeholder="Password" formControlName="password">
+            </mat-form-field>
+            <button mat-icon-button type="submit"><mat-icon fontIcon="check"></mat-icon></button>
+        </form>
+    </div>
 </div> 
